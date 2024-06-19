@@ -1,12 +1,11 @@
 from flask import Flask
 from src.database import db
-
-app = Flask(__name__)
+from src.database.models import Base
 
 
 def create_app():
     app = Flask(__name__)
-
+    Base.metadata.create_all(bind=db.engine)
     return app
 
 
