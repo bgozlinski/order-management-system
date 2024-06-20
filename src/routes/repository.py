@@ -3,6 +3,7 @@ from src.database.models import Order
 from src.database.db import get_db
 from src.schemas.orders import OrderSchema
 from datetime import datetime
+import pandas as pd
 
 
 def add_order(order: OrderSchema) -> Order:
@@ -75,3 +76,15 @@ def update_status(order_ids: List[int], new_status: str) -> Dict[str, Union[List
         "updated_orders": updated_orders,
         "not_found_orders": not_found_orders
     }
+
+
+def get_order_statistics() -> Dict[str, str]:
+    db = next(get_db())
+    orders = db.query(Order).all()
+
+    data = [order.to_dict() for order in orders]
+    df = pd.DataFrame(data)
+
+    status_counts = df['status'].value_counts().to_dict()
+
+    return status_counts
