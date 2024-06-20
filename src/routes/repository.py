@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from src.database.models import Order
 from src.database.db import get_db
 from src.schemas.orders import OrderSchema
@@ -23,6 +23,14 @@ def get_orders() -> List[Order]:
     db = next(get_db())
     orders = db.query(Order).all()
     return orders
+
+
+def get_order(id: int) -> Optional[Order]:
+    db = next(get_db())
+    order = db.query(Order).get(id)
+    if order is None:
+        raise ValueError(f'Order {id} not found')
+    return order
 
 
 def edit_order(id: int, updated_order: OrderSchema) -> Order:
