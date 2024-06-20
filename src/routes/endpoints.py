@@ -1,7 +1,14 @@
 from typing import Tuple
-
 from flask import Blueprint, request, jsonify, Response
-from src.routes.repository import add_order, get_orders, edit_order, delete_order, get_order, update_status
+from src.routes.repository import (
+    add_order,
+    get_orders,
+    edit_order,
+    delete_order,
+    get_order,
+    update_status,
+    get_order_statistics
+)
 from src.schemas.orders import OrderSchema
 from pydantic import ValidationError
 
@@ -78,3 +85,12 @@ def update_status_endpoint() -> Tuple[Response, int]:
         }), 200
     except ValidationError as e:
         return jsonify(e.errors()), 400
+
+
+@bp.route('/orders/statistics', methods=['GET'])
+def get_order_statistics_endpoint() -> Tuple[Response, int]:
+    try:
+        statistics = get_order_statistics()
+        return jsonify(statistics), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
