@@ -1,5 +1,5 @@
 from typing import Tuple
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, jsonify, Response, send_file
 from src.routes.repository import (
     add_order,
     get_orders,
@@ -7,7 +7,8 @@ from src.routes.repository import (
     delete_order,
     get_order,
     update_status,
-    get_order_statistics
+    get_order_statistics,
+    generate_report_xlsx
 )
 from src.schemas.orders import OrderSchema
 from pydantic import ValidationError
@@ -92,5 +93,23 @@ def get_order_statistics_endpoint() -> Tuple[Response, int]:
     try:
         statistics = get_order_statistics()
         return jsonify(statistics), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/orders/report', methods=['GET'])
+def generate_report_endpoint() -> Response:
+    """
+    API endpoint to generate an XLSX report containing all orders in the system.
+
+    This endpoint calls the generate_report_xlsx function to create the report,
+    then sends the report file as an attachment for download.
+
+    Returns:
+        Response: A Flask response object that sends the XLSX report as an attachment.
+    """
+    try:
+        report_path = generate_report_xlsx()
+        return send_file(report_path, as_attachment=True, download_name='orders_report.xlsx')
     except Exception as e:
         return jsonify({"error": str(e)}), 500
