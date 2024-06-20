@@ -36,3 +36,13 @@ def edit_order(id: int, updated_order: OrderSchema) -> Order:
     db.commit()
     db.refresh(order)
     return order
+
+
+def delete_order(id: int) -> Order:
+    db = next(get_db())
+    order = db.query(Order).get(id)
+    if order is None:
+        raise ValueError(f'Order {id} not found')
+    db.delete(order)
+    db.commit()
+    return order
