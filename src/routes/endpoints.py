@@ -33,7 +33,7 @@ def get_order_endpoint(id: int) -> Tuple[Response, int]:
     try:
         response = get_order(id)
         return jsonify(OrderSchema.from_orm(response).dict()), 200
-    except ValueError  as e:
+    except ValueError as e:
         return jsonify({"error": str(e)}), 404
 
 
