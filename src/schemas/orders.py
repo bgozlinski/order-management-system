@@ -4,11 +4,11 @@ from datetime import datetime
 
 
 class OrderSchema(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     name: str
-    description: Optional[str]
-    creation_date: Optional[datetime]
+    description: Optional[str] = None
+    creation_date: Optional[datetime] = None
     status: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
