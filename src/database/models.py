@@ -13,3 +13,12 @@ class Order(Base):
     description = Column(String(200))
     creation_date = Column(DateTime, default=datetime.utcnow)
     status = Column(String(20), nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'creation_date': self.creation_date,
+            'status': self.status
+        }
