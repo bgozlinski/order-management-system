@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from flask import Blueprint, request, jsonify, Response
-from src.routes.repository import add_order, get_orders, edit_order, delete_order
+from src.routes.repository import add_order, get_orders, edit_order, delete_order, get_order
 from src.schemas.orders import OrderSchema
 from pydantic import ValidationError
 
@@ -30,6 +30,15 @@ def get_orders_endpoint() -> Tuple[Response, int]:
 
 @bp.route('/orders/<int:id>', methods=['GET'])
 def get_order_endpoint(id: int) -> Tuple[Response, int]:
+    try:
+        response = get_order(id)
+        return jsonify(OrderSchema.from_orm(response).dict()), 200
+    except ValueError  as e:
+        return jsonify({"error": str(e)}), 404
+
+
+@bp.route('/orders/<int:id>', methods=['PUT'])
+def edit_order_endpoint(id: int) -> Tuple[Response, int]:
     try:
         data = request.get_json()
         update_order = OrderSchema(**data)
