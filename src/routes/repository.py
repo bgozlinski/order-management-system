@@ -217,7 +217,7 @@ def generate_report_xlsx() -> str:
             cell.fill = fill
 
     # Define the reports directory and create it if it doesn't exist
-    reports_dir = "reports"
+    reports_dir = os.path.join(os.getcwd(), 'reports')
     if not os.path.exists(reports_dir):
         os.makedirs(reports_dir)
 
