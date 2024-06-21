@@ -11,7 +11,7 @@ from src.routes.repository import (
     get_order_statistics,
     generate_report_xlsx,
     export_orders_to_hdf5,
-    import_orders_from_hdf5
+    import_orders_from_hdf5, import_orders_from_xml, export_orders_to_xml
 )
 from src.schemas.orders import OrderSchema
 from pydantic import ValidationError
@@ -179,7 +179,7 @@ def generate_report_endpoint() -> Response | Tuple[Response, int]:
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route('/orders/export', methods=['GET'])
+@bp.route('/orders/export/hdf5', methods=['GET'])
 def export_orders_to_hdf5_endpoint() -> Response:
     """
     API endpoint to export orders to an HDF5 file.
@@ -197,7 +197,7 @@ def export_orders_to_hdf5_endpoint() -> Response:
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route('/orders/import', methods=['POST'])
+@bp.route('/orders/import/hdf5', methods=['POST'])
 def import_orders_from_hdf5_endpoint() -> Tuple[Response, int]:
     """
     API endpoint to import orders from an HDF5 file.
@@ -215,6 +215,47 @@ def import_orders_from_hdf5_endpoint() -> Tuple[Response, int]:
             os.makedirs('uploads')
         file.save(file_path)
         import_orders_from_hdf5(file_path)
+        return jsonify({"message": "Orders imported successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/orders/export/xml', methods=['GET'])
+def export_orders_to_xml_endpoint() -> Response | Tuple[Response, int]:
+    """
+    API endpoint to export orders to an XML file.
+
+    This endpoint calls the export_orders_to_xml function to create the XML file,
+    then sends the file as an attachment for download.
+
+    Returns:
+        Response: A Flask response object that sends the XML file as an attachment.
+    """
+    try:
+        file_path = export_orders_to_xml()
+        return send_file(file_path, as_attachment=True, download_name=os.path.basename(file_path))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/orders/import/xml', methods=['POST'])
+def import_orders_from_xml_endpoint() -> Tuple[Response, int]:
+    """
+    API endpoint to import orders from an XML file.
+
+    This endpoint reads the XML file from the request, saves it to the 'uploads' directory,
+    and calls the import_orders_from_xml function to import the orders.
+
+    Returns:
+        Tuple[Response, int]: A Flask response object with a success message.
+    """
+    try:
+        file = request.files['file']
+        file_path = os.path.join('uploads', file.filename)
+        if not os.path.exists('uploads'):
+            os.makedirs('uploads')
+        file.save(file_path)
+        import_orders_from_xml(file_path)
         return jsonify({"message": "Orders imported successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
