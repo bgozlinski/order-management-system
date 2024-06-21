@@ -38,6 +38,19 @@ def get_order(id: int) -> Optional[Order]:
 
 
 def edit_order(id: int, updated_order: OrderSchema) -> Order:
+    """
+    Edits an existing order with the provided updated order details.
+
+    Args:
+        id (int): The ID of the order to be edited.
+        updated_order (OrderSchema): The updated order details.
+
+    Returns:
+        Order: The updated order object.
+
+    Raises:
+        ValueError: If the order with the given ID does not exist.
+    """
     db = next(get_db())
     order = db.query(Order).get(id)
     if order is None:
@@ -60,20 +73,20 @@ def delete_order(id: int) -> Order:
     return order
 
 
-def update_status(order_ids: List[int], new_status: str) -> Dict[str, Union[List[Order], List[str]]]:
+def update_status(ids: List[int], new_status: str) -> Dict[str, Union[List[Order], List[str]]]:
     db = next(get_db())
     updated_orders = []
     not_found_orders = []
 
-    for order_id in order_ids:
-        order = db.query(Order).get(order_id)
+    for id in ids:
+        order = db.query(Order).get(id)
         if order:
             order.status = new_status
             db.commit()
             db.refresh(order)
             updated_orders.append(order)
         else:
-            not_found_orders.append(f"Order ID {order_id} not found")
+            not_found_orders.append(f"Order ID {id} not found")
 
     return {
         "updated_orders": updated_orders,

@@ -49,6 +49,15 @@ def get_order_endpoint(id: int) -> Tuple[Response, int]:
 
 @bp.route('/orders/<int:id>', methods=['PUT'])
 def edit_order_endpoint(id: int) -> Tuple[Response, int]:
+    """
+    API endpoint to edit an existing order with the provided updated order details.
+
+    Args:
+        id (int): The ID of the order to be edited.
+
+    Returns:
+        Tuple[Response, int]: A Flask response object with the updated order details or an error message.
+    """
     try:
         data = request.get_json()
         updated_order = OrderSchema(**data)
@@ -98,7 +107,7 @@ def get_order_statistics_endpoint() -> Tuple[Response, int]:
 
 
 @bp.route('/orders/report', methods=['GET'])
-def generate_report_endpoint() -> Response:
+def generate_report_endpoint() -> Response | Tuple[Response, int]:
     """
     API endpoint to generate an XLSX report containing all orders in the system.
 
