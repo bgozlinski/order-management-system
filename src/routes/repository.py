@@ -8,6 +8,7 @@ from datetime import datetime
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
+import xml.etree.ElementTree as ET
 
 
 def add_order(order: OrderSchema) -> Order:
@@ -240,7 +241,6 @@ def export_orders_to_hdf5() -> str:
     db = next(get_db())
     orders = db.query(Order).all()
 
-    # Convert orders to a list of dictionaries and then to a DataFrame
     data = [order.to_dict() for order in orders]
     df = pd.DataFrame(data)
 
@@ -248,23 +248,16 @@ def export_orders_to_hdf5() -> str:
     for column in df.select_dtypes(include=['datetime64[ns]']).columns:
         df[column] = df[column].astype(str)
 
-    # Define the reports directory and create it if it doesn't exist
+    # Define the reports directory and file path
     reports_dir = "reports"
     if not os.path.exists(reports_dir):
         os.makedirs(reports_dir)
 
-    # Define the file path for the HDF5 file
     file_path = os.path.join(reports_dir, "orders.hdf5")
 
-    # Write the DataFrame to an HDF5 file
     with h5py.File(file_path, 'w') as f:
         for column in df.columns:
-            # Create a dataset for each column
-            if df[column].dtype == 'object':
-                data = df[column].astype('S')  # Convert to bytes using numpy
-            else:
-                data = df[column].values
-            f.create_dataset(column, data=data)
+            f.create_dataset(column, data=df[column].values)
 
     return file_path
 
@@ -281,30 +274,19 @@ def import_orders_from_hdf5(file_path: str) -> None:
     """
     db = next(get_db())
 
-    # Read the HDF5 file and load the data into a DataFrame
     with h5py.File(file_path, 'r') as f:
         data = {key: f[key][:] for key in f.keys()}
 
     df = pd.DataFrame(data)
 
-    # Decode byte strings
+    # Convert string columns back to datetime
     for column in df.columns:
-        if df[column].dtype == 'S':  # Check if the column is of bytes type
-            df[column] = df[column].apply(lambda x: x.decode('utf-8'))
-
-    # List of columns that should be converted to datetime
-    datetime_columns = ['creation_date']
-
-    # Convert string columns back to datetime where applicable
-    for column in datetime_columns:
-        if column in df.columns:
+        if df[column].dtype == object:
             try:
-                df[column] = pd.to_datetime(df[column].astype(str))
-            except Exception as e:
-                print(f"Error converting column {column}: {e}")
-                df[column] = pd.to_datetime(df[column].astype(str), errors='coerce')
+                df[column] = pd.to_datetime(df[column].astype(str), errors='ignore')
+            except ValueError:
+                pass
 
-    # Merge the imported orders into the database
     for _, row in df.iterrows():
         order = Order(
             id=row['id'],
@@ -312,6 +294,69 @@ def import_orders_from_hdf5(file_path: str) -> None:
             description=row['description'],
             creation_date=row['creation_date'],
             status=row['status']
+        )
+        db.merge(order)
+    db.commit()
+
+
+def export_orders_to_xml() -> str:
+    """
+    Export all orders to an XML file.
+
+    This function retrieves all orders from the database and saves the data to an XML file in the 'reports' directory.
+
+    Returns:
+        str: The file path of the created XML file.
+    """
+    db = next(get_db())
+    orders = db.query(Order).all()
+
+    root = ET.Element("orders")
+    for order in orders:
+        order_elem = ET.Element("order")
+        for key, value in order.to_dict().items():
+            child = ET.Element(key)
+            child.text = str(value)
+            order_elem.append(child)
+        root.append(order_elem)
+
+    tree = ET.ElementTree(root)
+
+    reports_dir = "reports"
+    if not os.path.exists(reports_dir):
+        os.makedirs(reports_dir)
+
+    file_path = os.path.join(reports_dir, "orders.xml")
+    tree.write(file_path)
+
+    return file_path
+
+
+def import_orders_from_xml(file_path: str) -> None:
+    """
+    Import orders from an XML file.
+
+    This function reads order data from an XML file and merges the data into the database.
+
+    Args:
+        file_path (str): The file path of the XML file to import.
+    """
+    db = next(get_db())
+
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+
+    for order_elem in root.findall('order'):
+        order_data = {child.tag: child.text for child in order_elem}
+        order_data['id'] = int(order_data['id'])
+        order_data['creation_date'] = pd.to_datetime(order_data['creation_date'])
+
+        order = Order(
+            id=order_data['id'],
+            name=order_data['name'],
+            description=order_data['description'],
+            creation_date=order_data['creation_date'],
+            status=order_data['status']
         )
         db.merge(order)
     db.commit()
