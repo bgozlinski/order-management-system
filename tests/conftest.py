@@ -6,7 +6,7 @@ from src.database.db import get_engine, SessionLocal
 
 @pytest.fixture(scope='session')
 def app():
-    app = create_app('testing')
+    app = create_app(config_name='testing')
 
     with app.app_context():
         Base.metadata.create_all(bind=get_engine())
