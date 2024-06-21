@@ -6,3 +6,4 @@ pandas
 openpyxl
 Flask-Testing
 h5py
+Flask-Migrate
