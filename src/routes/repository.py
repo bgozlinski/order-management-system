@@ -31,7 +31,7 @@ def get_orders() -> List[Order]:
 
 def get_order(id: int) -> Optional[Order]:
     db = next(get_db())
-    order = db.query(Order).get(id)
+    order = db.get(Order, id)
     if order is None:
         raise ValueError(f'Order {id} not found')
     return order
@@ -52,7 +52,7 @@ def edit_order(id: int, updated_order: OrderSchema) -> Order:
         ValueError: If the order with the given ID does not exist.
     """
     db = next(get_db())
-    order = db.query(Order).get(id)
+    order = db.get(Order, id)
     if order is None:
         raise ValueError(f'Order {id} not found')
     order.name = updated_order.name
@@ -65,7 +65,7 @@ def edit_order(id: int, updated_order: OrderSchema) -> Order:
 
 def delete_order(id: int) -> Order:
     db = next(get_db())
-    order = db.query(Order).get(id)
+    order = db.get(Order, id)
     if order is None:
         raise ValueError(f'Order {id} not found')
     db.delete(order)
@@ -79,7 +79,7 @@ def update_status(ids: List[int], new_status: str) -> Dict[str, Union[List[Order
     not_found_orders = []
 
     for id in ids:
-        order = db.query(Order).get(id)
+        order = db.get(Order, id)
         if order:
             order.status = new_status
             db.commit()

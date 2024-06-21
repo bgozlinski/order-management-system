@@ -5,9 +5,16 @@ import os
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('DB_HOST_IP')}:5432/{os.getenv('POSTGRES_DB')}"
+SQLALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///:memory:')
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+def get_engine(database_url=None):
+    if database_url is None:
+        database_url = SQLALCHEMY_DATABASE_URL
+    return create_engine(database_url)
+
+
+engine = get_engine()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
