@@ -180,7 +180,7 @@ def generate_report_endpoint() -> Response | Tuple[Response, int]:
 
 
 @bp.route('/orders/export/hdf5', methods=['GET'])
-def export_orders_to_hdf5_endpoint() -> Response:
+def export_orders_to_hdf5_endpoint() -> Response | Tuple[Response, int]:
     """
     API endpoint to export orders to an HDF5 file.
 
