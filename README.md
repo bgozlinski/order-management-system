@@ -13,7 +13,7 @@ This is a simple Order Management System built with Flask and SQLAlchemy, using 
 
 ## Requirements
 
-- Python 3.7+
+- Python 3.11+
 - PostgreSQL
 - pip (Python package installer)
 
