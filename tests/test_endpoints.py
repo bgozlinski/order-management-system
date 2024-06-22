@@ -1,4 +1,12 @@
 import json
+import os
+
+import h5py
+import xml.etree.ElementTree as ET
+from datetime import datetime
+
+from src.database.models import Order
+from src.routes.repository import export_orders_to_xml, export_orders_to_hdf5
 
 
 def test_add_order(client, session):
@@ -123,3 +131,67 @@ def test_generate_report_xlsx(client, session):
     response = client.get('/api/orders/report')
     assert response.status_code == 200
     assert response.headers['Content-Type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+
+def test_export_orders_to_hdf5(session):
+    order = Order(name="Order 1", description="Description 1", status="New", creation_date=datetime.utcnow())
+    session.add(order)
+    session.commit()
+
+    file_path = export_orders_to_hdf5()
+    assert os.path.exists(file_path)
+    os.remove(file_path)
+
+
+def test_import_orders_from_hdf5(client, session, tmpdir):
+    file_path = tmpdir.join("orders.hdf5")
+    with h5py.File(file_path, 'w') as f:
+        f.create_dataset("id", data=[1])
+        f.create_dataset("name", data=[b"Test Order"])
+        f.create_dataset("description", data=[b"Test Description"])
+        f.create_dataset("status", data=[b"New"])
+        f.create_dataset("creation_date", data=[str(datetime.utcnow()).encode()])
+
+    with open(file_path, 'rb') as f:
+        response = client.post('/api/orders/import/hdf5', data={'file': (f, "orders.hdf5")})
+        assert response.status_code == 200
+        assert response.json['message'] == "Orders imported successfully"
+
+    response = client.get('/api/orders')
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]['name'] == "Test Order"
+
+
+def test_export_orders_to_xml(session):
+    order = Order(name="Order 1", description="Description 1", status="New", creation_date=datetime.utcnow())
+    session.add(order)
+    session.commit()
+
+    file_path = export_orders_to_xml()
+    assert os.path.exists(file_path)
+    os.remove(file_path)
+
+
+def test_import_orders_from_xml(client, session, tmpdir):
+    file_path = tmpdir.join("orders.xml")
+    root = ET.Element("orders")
+    order_elem = ET.Element("order")
+    ET.SubElement(order_elem, "id").text = "1"
+    ET.SubElement(order_elem, "name").text = "Test Order"
+    ET.SubElement(order_elem, "description").text = "Test Description"
+    ET.SubElement(order_elem, "status").text = "New"
+    ET.SubElement(order_elem, "creation_date").text = str(datetime.utcnow())
+    root.append(order_elem)
+    tree = ET.ElementTree(root)
+    tree.write(file_path)
+
+    with open(file_path, 'rb') as f:
+        response = client.post('/api/orders/import/xml', data={'file': (f, "orders.xml")})
+        assert response.status_code == 200
+        assert response.json['message'] == "Orders imported successfully"
+
+    response = client.get('/api/orders')
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]['name'] == "Test Order"

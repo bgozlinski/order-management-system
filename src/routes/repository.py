@@ -244,12 +244,10 @@ def export_orders_to_hdf5() -> str:
     data = [order.to_dict() for order in orders]
     df = pd.DataFrame(data)
 
-    # Convert datetime columns to strings
     for column in df.select_dtypes(include=['datetime64[ns]']).columns:
         df[column] = df[column].astype(str)
 
-    # Define the reports directory and file path
-    reports_dir = "reports"
+    reports_dir = os.path.join(os.getcwd(), 'reports')
     if not os.path.exists(reports_dir):
         os.makedirs(reports_dir)
 
