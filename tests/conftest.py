@@ -4,7 +4,7 @@ from src.database.db import get_engine, SessionLocal
 from src.database.models import Base
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def app():
     app = create_app('testing')
     app.config.update({
@@ -24,12 +24,12 @@ def app():
         SessionLocal.remove()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def client(app):
     return app.test_client()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def runner(app):
     return app.test_cli_runner()
 
