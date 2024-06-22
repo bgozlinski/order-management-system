@@ -17,11 +17,7 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = (
-        f"postgresql+psycopg2://{os.environ.get('POSTGRES_USER')}:"
-        f"{os.environ.get('POSTGRES_PASSWORD')}@"
-        f"{os.environ.get('DB_HOST_IP')}:5432/{os.getenv('TEST_POSTGRES_DB')}"
-    )
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     TESTING = True
 
 
