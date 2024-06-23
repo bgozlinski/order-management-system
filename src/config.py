@@ -1,3 +1,18 @@
+"""
+This module defines configuration classes for different environments and loads environment variables.
+
+Classes:
+    Config: Base configuration class with common settings.
+    DevelopmentConfig: Configuration class for development environment with PostgreSQL database settings.
+    TestingConfig: Configuration class for testing environment with SQLite in-memory database settings.
+
+Variables:
+    config_by_name (dict): A dictionary to map configuration names to their corresponding configuration classes.
+
+Usage:
+    Import this module to use the configuration settings in a Flask application.
+"""
+
 import os
 from dotenv import load_dotenv
 
