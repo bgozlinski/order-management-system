@@ -4,7 +4,8 @@ import h5py
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from src.database.models import Order
-from src.routes.services import export_orders_to_hdf5, export_orders_to_xml
+from src.routes.services.hdf5_service import export_orders_to_hdf5
+from src.routes.services.xml_service import export_orders_to_xml
 
 
 def test_add_order(client, session):

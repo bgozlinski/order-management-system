@@ -1,7 +1,6 @@
 from typing import Tuple
-
 from flask import Blueprint, request, jsonify, Response
-from src.routes.repository import add_order, get_orders, get_order, edit_order, delete_order, update_status
+from src.routes.services.repository import add_order, get_orders, get_order, edit_order, delete_order, update_status
 from src.schemas.orders import OrderSchema
 from pydantic import ValidationError
 

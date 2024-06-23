@@ -1,8 +1,7 @@
 import os
 from typing import Tuple
-
 from flask import Blueprint, request, jsonify, send_file, Response
-from src.routes.services import export_orders_to_xml, import_orders_from_xml
+from src.routes.services.xml_service import export_orders_to_xml, import_orders_from_xml
 
 xml_bp = Blueprint('xml', __name__)
 

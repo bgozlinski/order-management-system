@@ -1,7 +1,7 @@
 from typing import Tuple
-
 from flask import Blueprint, jsonify, send_file, Response
-from src.routes.services import generate_report_xlsx, get_order_statistics
+from src.routes.services.order_statistic_service import get_order_statistics
+from src.routes.services.report_service import generate_report_xlsx
 
 report_bp = Blueprint('reports', __name__)
 

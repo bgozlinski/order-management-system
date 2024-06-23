@@ -1,5 +1,5 @@
 from flask import Blueprint
-from .crud_endpoints import crud_bp
+from .order_endpoints import crud_bp
 from .report_endpoints import report_bp
 from .hdf5_endpoints import hdf5_bp
 from .xml_endpoints import xml_bp
